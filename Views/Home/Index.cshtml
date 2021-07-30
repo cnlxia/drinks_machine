@@ -1,0 +1,166 @@
+﻿<script src="~/lib/jquery/dist/jquery.js"></script>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        if ($("#showDialog").val() !== "0") {
+            $("#DialogMessage").modal();
+        }
+
+        let itemListAmount = new Array();
+        let itemListCost = new Array();
+
+        $("#ItemsModule input.item-amount").each(function () {
+            itemListAmount.push(this);
+        })
+
+        $("#ItemsModule input.item-cost").each(function () {
+            itemListCost.push(this);
+        })
+
+        function updateTotalCost() {
+            let totalCost = 0;
+            for (let i = 0; i < itemListCost.length; i++) {
+                if (itemListCost[i].value) {
+                    let itemAmount = parseInt(itemListAmount[i].value != "" ? itemListAmount[i].value : 0);
+                    totalCost += itemAmount > 0 ? parseInt(itemListCost[i].value) * itemAmount : 0;
+                }
+            }
+            $(".label-price").text("$" + totalCost / 100);
+            $(".total-price input").val(totalCost);
+        }
+
+        $(itemListAmount).on('change', function () {
+            updateTotalCost();
+        })
+
+    </script>
+}
+
+@model Drinks_Machine_Program.Forms.DrinksMachineForm
+
+@{ ViewData["Title"] = "Home Page"; }
+
+<div>
+    <form asp-action="Index">
+        <div>
+            <table>
+                <tr>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td>
+                        <strong>COINS INFORMATION</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                </tr>
+            </table>
+        </div>
+
+        <div>
+            <div>
+                <div class="row">
+                    @for (int i = 0; i < Model.CoinsUsed.Count; i++)
+                    {
+        <div>
+            <strong>@Model.CoinsUsed[i].Text</strong>
+            <input type="number" min="1" asp-for="CoinsUsed[i].Value" class="form-control" style="width:40%; border:solid" />
+            <input type="hidden" asp-for="CoinsUsed[i].Text" />
+        </div>}
+                </div>
+            </div>
+        </div>
+
+        <div>
+            <table>
+                <tr>
+                    <td>&nbsp;</td>
+                </tr>
+                <tr>
+                    <td>
+                        <strong>PRODUCTS INFORMATION</strong>
+                    </td>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="row" id="ItemsModule">
+            <table>
+                @for (int i = 0; i < Model.DrinksMachineModel.ItemsStock.Count; i++)
+                {
+
+    <tr>
+        <td>
+            <strong>@Model.DrinksMachineModel.ItemsStock[i].Name</strong>
+        </td>
+        <td>&nbsp;</td>
+        <td rowspan="2">
+            <input type="number" min="1" asp-for="ItemsBought[i].Value" class="form-control item-amount" style="width:40%; border:solid" />
+            <input type="hidden" class="item-cost" value="@Model.DrinksMachineModel.ItemsStock[i].Cost" />
+            <input type="hidden" asp-for="ItemsBought[i].Text" />
+        </td>
+    </tr>
+                    <tr>
+                        <td>
+                            @Model.DrinksMachineModel.ItemsStock[i].Quantity drinks available, Cost = @Model.DrinksMachineModel.ItemsStock[i].Cost
+                        </td>
+                    </tr>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                    </tr>}
+            </table>
+        </div>
+
+        <div class="row" style="float:right">
+            <div>
+                <div id="totalView">
+                    <strong>ORDER TOTAL:</strong>
+                </div>
+            </div>
+        </div>
+
+        <br />
+        <div class="total-price row" style="float:right">
+            <div class="form-group">
+                <label class="label-price"></label>
+                <input type="hidden" asp-for="Total" class="form-control" />
+                <span asp-validation-for="Total" class="text-danger"></span>
+            </div>
+        </div>
+
+        <br />
+        <div class="row" style="float:right">
+            <div class="form-group">
+                <input type="submit" value="GET DRINKS" class="btn btn-block btn-light" style="border:solid" />
+            </div>
+        </div>
+    </form>
+</div>
+
+<input type="hidden" id="showDialog" value="@Model.Messages.Count" />
+<div class="modal fade" id="DialogMessage" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                @foreach (var message in Model.Messages)
+                {
+                    <p>@message</p>
+                }
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
